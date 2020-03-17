@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <DefineConstants>FABLE_COMPILER</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="index.html" />
+        <None Include="style.scss" />
+        <Compile Include="..\Shared\Shared.fs" />
+        <Compile Include="Version.fs" />
+        <Compile Include="Client.fs" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="fable.core" Version="3.1.5" />
+      <PackageReference Include="fable.elmish" Version="3.0.6" />
+      <PackageReference Include="fable.elmish.react" Version="3.0.1" />
+      <PackageReference Include="fable.react" Version="5.3.6" />
+      <PackageReference Include="fulma" Version="2.7.0" />
+      <PackageReference Include="thoth.fetch" Version="2.0.0" />
+    </ItemGroup>
+</Project>
