@@ -4,103 +4,94 @@ open Elmish
 open Elmish.React
 open Fable.React
 open Fable.React.Props
-open Fetch.Types
-open Thoth.Fetch
 open Fulma
-open Thoth.Json
-
 open Shared
+open Thoth.Fetch
 
-// The model holds data that you want to keep track of while the application is running
-// in this case, we are keeping track of a counter
-// we mark it as optional, because initially it will not be available from the client
-// the initial value will be requested from server
-type Model = { Counter: Counter option }
+type Model =
+    { CurrentValue : int }
 
-// The Msg type defines what events/actions can occur while the application is running
-// the state of the application changes *only* in reaction to these events
 type Msg =
     | Increment
     | Decrement
     | InitialCountLoaded of Counter
 
-let initialCounter () = Fetch.fetchAs<_, Counter>("/api/init")
+let initialCounter () = Fetch.get<_, Counter> "/api/init"
 
-// defines the initial state and initial command (= side-effect) of the application
-let init () : Model * Cmd<Msg> =
-    let initialModel = { Counter = None }
-    let loadCountCmd =
-        Cmd.OfPromise.perform initialCounter () InitialCountLoaded
+let init () =
+    let initialModel = { CurrentValue = 0 }
+    let loadCountCmd = Cmd.OfPromise.perform initialCounter () InitialCountLoaded
     initialModel, loadCountCmd
 
-// The update function computes the next state of the application based on the current state and the incoming events/messages
-// It can also run side-effects (encoded as commands) like calling the server via Http.
-// these commands in turn, can dispatch messages to which the update function will react.
-let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
-    match currentModel.Counter, msg with
-    | Some counter, Increment ->
-        let nextModel = { currentModel with Counter = Some { Value = counter.Value + 1 } }
-        nextModel, Cmd.none
-    | Some counter, Decrement ->
-        let nextModel = { currentModel with Counter = Some { Value = counter.Value - 1 } }
-        nextModel, Cmd.none
-    | _, InitialCountLoaded initialCount->
-        let nextModel = { Counter = Some initialCount }
-        nextModel, Cmd.none
-    | _ -> currentModel, Cmd.none
-
+let update msg model =
+    match msg with
+    | Increment ->
+        { CurrentValue = model.CurrentValue + 1 }, Cmd.none
+    |  Decrement ->
+        { CurrentValue = model.CurrentValue - 1 }, Cmd.none
+    | InitialCountLoaded initialCount ->
+        { CurrentValue = initialCount.Value }, Cmd.none
 
 let safeComponents =
-    let components =
-        span [ ]
-           [ a [ Href "https://github.com/SAFE-Stack/SAFE-template" ]
-               [ str "SAFE 2.0" ]
-             str ", "
-             a [ Href "https://saturnframework.github.io" ] [ str "Saturn" ]
-             str ", "
-             a [ Href "http://fable.io" ] [ str "Fable" ]
-             str ", "
-             a [ Href "https://elmish.github.io" ] [ str "Elmish" ]
-             str ", "
-             a [ Href "https://fulma.github.io/Fulma" ] [ str "Fulma" ]
+    span [ ] [
+        str "Powered by: "
+        span [ ] [
+            // CSS value using Fable.React DSL
+            a [ Href "https://github.com/SAFE-Stack/SAFE-template"; Style [ FontWeight "Bold" ] ] [ str "SAFE 2.0, " ]
 
-           ]
+            // CSS custom value
+            a [ Href "https://saturnframework.github.io"; Style [ Custom("color", "brown") ] ] [ str "Saturn, " ]
 
-    span [ ]
-        [ str " powered by: "
-          components ]
+            // Completely custom HTML attribute
+            a [ Href "http://fable.io"; HTMLAttr.Custom("Style", "color:green") ] [ str "Fable, " ]
+            a [ Href "https://elmish.github.io" ] [ str "Elmish, " ]
+            a [ Href "https://fulma.github.io/Fulma" ] [ str "and Fulma." ];
+        ]
+    ]
 
 let show = function
-    | { Counter = Some counter } -> string counter.Value
-    | { Counter = None   } -> "Loading..."
+    | { CurrentValue = 0 } -> "Loading..."
+    | { CurrentValue = counter } -> string counter
 
-let button txt onClick =
+let makeButton txt onClick =
     Button.button
         [ Button.IsFullWidth
           Button.Color IsPrimary
           Button.OnClick onClick ]
         [ str txt ]
 
-let view (model : Model) (dispatch : Msg -> unit) =
-    div []
-        [ Navbar.navbar [ Navbar.Color IsPrimary ]
-            [ Navbar.Item.div [ ]
-                [ Heading.h2 [ ]
-                    [ str "SAFE Template" ] ] ]
+let view model dispatch =
+    div [] [
+        Navbar.navbar [ Navbar.Color IsPrimary ] [
+            Navbar.Item.div [ ] [
+                Heading.h2 [ ] [
+                    str "SAFE Template"
+                ]
+            ]
+        ]
 
-          Container.container []
-              [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
-                    [ Heading.h3 [] [ str ("Press buttons to manipulate counter: " + show model) ] ]
-                Columns.columns []
-                    [ Column.column [] [ button "-" (fun _ -> dispatch Decrement) ]
-                      Column.column [] [ button "+" (fun _ -> dispatch Increment) ] ] ]
+        Container.container [] [
+            Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ] [
+                Heading.h3 [] [ str ("Press buttons to manipulate counter: " + show model) ]
+            ]
+            Columns.columns [] [
+                Column.column [] [
+                    makeButton "-" (fun _ -> dispatch Decrement)
+                ]
+                Column.column [] [
+                    makeButton "+" (fun _ -> dispatch Increment)
+                ]
+            ]
 
-          Footer.footer [ ]
-                [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
-                    [ safeComponents ] ] ]
+            Footer.footer [ ] [
+                Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ] [
+                    safeComponents
+                ]
+            ]
+        ]
+    ]
 
 Program.mkProgram init update view
 |> Program.withConsoleTrace
 |> Program.withReactSynchronous "elmish-app"
-//|> Program.withDebugger
 |> Program.run

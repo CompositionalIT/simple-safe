@@ -9,7 +9,8 @@
         <Compile Include="Server.fs" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="saturn" Version="0.12.1" />
+      <PackageReference Update="FSharp.Core" Version="4.7.1" />
+      <PackageReference Include="saturn" Version="0.13.1" />
       <PackageReference Include="thoth.json.giraffe" Version="4.0.0" />
     </ItemGroup>
 </Project>
