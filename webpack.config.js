@@ -35,10 +35,6 @@ var CONFIG = {
        }
 }
 
-// If we're running the webpack-dev-server, assume we're in development mode
-var isProduction = true; //!process.argv.find(v => v.indexOf('webpack-dev-server') !== -1);
-console.log('Bundling for ' + (isProduction ? 'production' : 'development') + '...');
-
 // The HtmlWebpackPlugin allows us to use a template for the index.html page
 // and automatically injects <script> or <link> tags for generated bundles.
 var commonPlugins = [
@@ -49,46 +45,25 @@ var commonPlugins = [
 ];
 
 module.exports = {
-    // In development, split the JavaScript and CSS files in order to
-    // have a faster HMR support. In production bundle styles together
-    // with the code because the MiniCssExtractPlugin will extract the
-    // CSS in a separate files.
-    entry: isProduction ? {
-        app: [resolve(CONFIG.fsharpEntry)]
-    } : {
-            app: [resolve(CONFIG.fsharpEntry)]
-        },
+    entry: { app: [resolve(CONFIG.fsharpEntry)] },
     // Add a hash to the output file name in production
     // to prevent browser caching if code changes
     output: {
         path: resolve(CONFIG.outputDir),
-        filename: isProduction ? '[name].[hash].js' : '[name].js'
+        filename: '[name].js'
     },
-    mode: isProduction ? 'production' : 'development',
+    mode: 'development',
     optimization: {
         splitChunks: {
             chunks: 'all'
         },
     },
-    // Besides the HtmlPlugin, we use the following plugins:
-    // PRODUCTION
-    //      - MiniCssExtractPlugin: Extracts CSS from bundle to a different file
-    //          To minify CSS, see https://github.com/webpack-contrib/mini-css-extract-plugin#minimizing-for-production
-    //      - CopyWebpackPlugin: Copies static assets to output directory
-    // DEVELOPMENT
-    //      - HotModuleReplacementPlugin: Enables hot reloading when code changes without refreshing
-    plugins: isProduction ?
-        commonPlugins.concat([
-            new CopyWebpackPlugin([{ from: resolve(CONFIG.assetsDir) }]),
-        ])
-        : commonPlugins.concat([
+    plugins : commonPlugins.concat([
             new webpack.HotModuleReplacementPlugin(),
         ]),
     resolve: {
-        // See https://github.com/fable-compiler/Fable/issues/1490
         symlinks: false
     },
-    // Configuration for webpack-dev-server
     devServer: {
         publicPath: '/',
         contentBase: resolve(CONFIG.assetsDir),
@@ -98,10 +73,7 @@ module.exports = {
         hot: true,
         inline: true
     },
-    // - fable-loader: transforms F# into JS
-    // - babel-loader: transforms JS to old syntax (compatible with old browsers)
-    // - sass-loaders: transforms SASS/SCSS into JS
-    // - file-loader: Moves files referenced in the code (fonts, images) into output folder
+
     module: {
         rules: [
             {

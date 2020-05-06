@@ -67,9 +67,7 @@ let safeComponents =
            ]
 
     span [ ]
-        [ str "Version "
-          strong [ ] [ str Version.app ]
-          str " powered by: "
+        [ str " powered by: "
           components ]
 
 let show = function
@@ -95,7 +93,7 @@ let view (model : Model) (dispatch : Msg -> unit) =
                     [ Heading.h3 [] [ str ("Press buttons to manipulate counter: " + show model) ] ]
                 Columns.columns []
                     [ Column.column [] [ button "-" (fun _ -> dispatch Decrement) ]
-                      Column.column [] [ button "ADD" (fun _ -> dispatch Increment) ] ] ]
+                      Column.column [] [ button "+" (fun _ -> dispatch Increment) ] ] ]
 
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
