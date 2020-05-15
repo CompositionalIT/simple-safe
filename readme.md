@@ -1,6 +1,6 @@
 # Getting started
 
-1. Start the server: `dotnet -p src/server`
+1. Start the server: `dotnet watch -p src/server run`
 1. Test that it's running: hit the endpoint `http://locahost:8085/api/init` - it should return `Value : 42`
 1. Restore NPM dependencies: `npm install`
 1. Start the client: `node_modules\.bin\webpack-dev-server`
